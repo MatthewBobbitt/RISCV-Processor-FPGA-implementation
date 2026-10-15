@@ -3,7 +3,9 @@
 
 module TOP(
     input logic clk,
-    input logic rst
+    input logic rst,
+    input logic rx,
+    output logic tx
     );
     
     logic [31:0] pc; // Current address
@@ -15,6 +17,11 @@ module TOP(
     
     logic [31:0] instr_reg; // Stores current instruction execution
     logic ir_write; // enables instruction register below to be written into
+    
+    logic imem_write_en;
+    logic [7:0] imem_write_addr;
+    logic [31:0] imem_write_data;
+    
     // INSTRUCTION DECODER SIGNALS (there are a LOT)
     logic [4:0] rs1;
     logic [4:0] rs2;
@@ -67,8 +74,17 @@ module TOP(
     // Jump
     logic [31:0] jump_target;
     logic jump_confirm;
+    // Halt
+    logic halted;
+    logic [1:0] halt_reason;
     
-    
+    // RX TX
+    logic [15:0] uart_clocks_per_bit = 16'd868;
+    logic [7:0] rx_data;
+    logic rx_valid;
+    logic [7:0] tx_data;
+    logic tx_valid;
+    logic tx_busy;
     
     
     PC PC_inst(
@@ -83,7 +99,10 @@ module TOP(
     IMEM instr_mem_inst(
         .clk(clk),
         .address_in(pc),
-        .instr_out(instruction)
+        .instr_out(instruction),
+        .write_en(imem_write_en),
+        .write_addr(imem_write_addr),
+        .write_data(imem_write_data)
     );
     
     ID id_inst(
@@ -179,8 +198,33 @@ module TOP(
         .pc_write(pc_write),
         .ir_write(ir_write),
         .mem_en(mem_en),
-        .reg_write_en(reg_write_en)
+        .reg_write_en(reg_write_en),
+        .halted(halted),
+        .halt_reason(halt_reason),
+        .ecall(ecall),
+        .ebreak(ebreak),
+        .illegal_instr(illegal_instr)
     );
+    
+    uart_RX RX_inst(
+        .clk(clk),
+        .rst(rst),
+        .rx(rx),
+        .clocks_per_bit(uart_clocks_per_bit),
+        .data_out(rx_data),
+        .data_valid(rx_valid)
+    );
+
+    uart_TX TX_inst(
+        .clk(clk),
+        .rst(rst),
+        .data_in(tx_data),
+        .data_valid(tx_valid),
+        .clocks_per_bit(uart_clocks_per_bit),
+        .tx(tx),
+        .busy(tx_busy)
+    );
+    
     
     always_ff @(posedge clk) begin
         if (rst) begin
@@ -203,6 +247,30 @@ module TOP(
         end
     end
     
+
+    logic [7:0] pending_data;
+    logic pending_valid;
+
+    always_ff @(posedge clk) begin
+        if (rst) begin
+            tx_data <= 8'd0;
+            tx_valid <= 1'b0;
+            pending_data <= 8'd0;
+            pending_valid <= 1'b0;
+        end
+
+        else begin
+            tx_valid <= 1'b0;
+            if (rx_valid) begin
+                pending_data <= rx_data;
+                pending_valid <= 1'b1;
+            end else if (pending_valid && !tx_busy) begin
+                tx_data <= pending_data;
+                tx_valid <= 1'b1;
+                pending_valid <= 1'b0;
+            end
+        end
+    end
     
-    
+  
 endmodule
