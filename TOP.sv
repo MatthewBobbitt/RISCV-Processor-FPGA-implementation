@@ -86,10 +86,14 @@ module TOP(
     logic tx_valid;
     logic tx_busy;
     
+    // Loader
+    logic load_done;
+    logic load_error;
+    logic cpu_rst; // Holds CPU in rst until RUN state
     
     PC PC_inst(
         .clk(clk),
-        .rst(rst),
+        .rst(cpu_rst),
         .increment(pc_write && !pc_direction), // increment when not jumping or branching
         .pc_direction(pc_direction && pc_write), // jump or branch when being written to, and when direction is active
         .location(next_pc),
@@ -189,7 +193,7 @@ module TOP(
     
     CTRL_FSM fsm_inst(
         .clk(clk),
-        .rst(rst),
+        .rst(cpu_rst),
         .mem_read(mem_read),
         .mem_write(mem_write),
         .reg_write(reg_write),
@@ -225,9 +229,27 @@ module TOP(
         .busy(tx_busy)
     );
     
+    UART_LOADER loader_inst(
+        .clk(clk),
+        .rst(rst),
+        .rx_data(rx_data),
+        .rx_valid(rx_valid),
+        .imem_write_en(imem_write_en),
+        .imem_write_addr(imem_write_addr),
+        .imem_write_data(imem_write_data),
+        .cpu_rst(cpu_rst),
+        .load_done(load_done),
+        .load_error(load_error)
+    );
+    
+    // As of right now, we are not transmitting back to the computer
+    // Disabling TX for the moment
+    assign tx_data = 8'h00;
+    assign tx_valid = 1'b0;
+    
     
     always_ff @(posedge clk) begin
-        if (rst) begin
+        if (cpu_rst) begin
             instr_reg <= 0;
         end else if (ir_write) begin
             instr_reg <= instruction;
@@ -247,30 +269,5 @@ module TOP(
         end
     end
     
-
-    logic [7:0] pending_data;
-    logic pending_valid;
-
-    always_ff @(posedge clk) begin
-        if (rst) begin
-            tx_data <= 8'd0;
-            tx_valid <= 1'b0;
-            pending_data <= 8'd0;
-            pending_valid <= 1'b0;
-        end
-
-        else begin
-            tx_valid <= 1'b0;
-            if (rx_valid) begin
-                pending_data <= rx_data;
-                pending_valid <= 1'b1;
-            end else if (pending_valid && !tx_busy) begin
-                tx_data <= pending_data;
-                tx_valid <= 1'b1;
-                pending_valid <= 1'b0;
-            end
-        end
-    end
     
-  
 endmodule
