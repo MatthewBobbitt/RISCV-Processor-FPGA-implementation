@@ -28,7 +28,7 @@ int main () {
         // No template file
 
     if (serial == INVALID_HANDLE_VALUE) {
-        cout << "Could not open COM port.\n";
+        cout << "Could not open COM port\n";
 
         return 1;
 }
@@ -39,7 +39,7 @@ int main () {
     serialConfig.DCBlength = sizeof(DCB); // DCB length is the byte size of DCB
 
     if (!GetCommState(serial, &serialConfig)){
-        cout << "Failed to read COM port settings.\n";
+        cout << "Failed to read COM port settings\n";
         CloseHandle(serial);
         return 1;
     }
@@ -59,7 +59,7 @@ int main () {
     // The dataflow for UART has already been designed in the FPGA
 
     if (!SetCommState(serial, &serialConfig)) {
-        cout << "Failed to apply COM port settings.\n";
+        cout << "Failed to apply COM port settings\n";
         CloseHandle(serial);
         return 1;
     }
@@ -99,7 +99,7 @@ int main () {
     cout << "Total instructions: " << instructionCount << "\n";
 
     if (instructionCount == 0 || instructionCount > 256) {
-        cout << "Program must contain 1 to 256 instructions.\n";
+        cout << "Program must contain 1 to 256 instructions\n";
         CloseHandle(serial);
         return 1;
     }
@@ -123,12 +123,12 @@ int main () {
     );
 
     if (!success || bytesWritten != 1) {
-        cout << "Failed to send LOAD command.\n";
+        cout << "Failed to send LOAD command\n";
         CloseHandle(serial);
         return 1;
     }
 
-    cout << "Sent LOAD command.\n";
+    cout << "Sent LOAD command\n";
 // ---------------------------------------------------------------------------------------------------------------
 // Send countLOW
 // ---------------------------------------------------------------------------------------------------------------
@@ -143,12 +143,12 @@ int main () {
     );
 
     if (!success || bytesWritten != 1) {
-        cout << "Failed to send countLow.\n";
+        cout << "Failed to send countLow\n";
         CloseHandle(serial);
         return 1;
     }
 
-    cout << "Sent countLow.\n";
+    cout << "Sent countLow\n";
 
 
 // ---------------------------------------------------------------------------------------------------------------
@@ -165,7 +165,7 @@ int main () {
     );
 
     if (!success || bytesWritten != 1) {
-        cout << "Failed to send countHigh.\n";
+        cout << "Failed to send countHigh\n";
         CloseHandle(serial);
         return 1;
     }
@@ -190,27 +190,40 @@ int main () {
                 1,
                 &bytesWritten,
                 NULL
-            )
+            );
 
             if (!success || bytesWritten != 1) {
-                cout << "Failed to send instruction byte.\n";
+                cout << "Failed to send instruction byte\n";
                 CloseHandle(serial);
                 return 1;
             }
 
-            cout << "Sent instruction: 0x" << hex << instr << "\n";
-
-    }
-
-
-
+            
         }
+        cout << "Sent instruction: 0x" << hex << instr << "\n";
+    }
+// ---------------------------------------------------------------------------------------------------------------
+// RUN command
+// ---------------------------------------------------------------------------------------------------------------
+    command = 'R'; // 0x52 Sent to loader
 
+    bytesWritten = 0;
 
+    success = WriteFile(
+        serial,
+        &command,
+        1,
+        &bytesWritten,
+        NULL
+    );
 
+    if (!success || bytesWritten != 1) {
+        cout << "Failed to send RUN command\n";
+        CloseHandle(serial);
+        return 1;
     }
 
-
+    cout << "Sent RUN command\n";
 
 
     CloseHandle(serial); // Releases COM port; other programs may use it
