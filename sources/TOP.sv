@@ -5,7 +5,11 @@ module TOP(
     input logic clk,
     input logic rst,
     input logic rx,
-    output logic tx
+    output logic tx,
+    output logic [2:0] led,
+    output logic [6:0] seg,
+    output logic [3:0] dig,
+    output logic dp
     );
     
     logic [31:0] pc; // Current address
@@ -90,6 +94,9 @@ module TOP(
     logic load_done;
     logic load_error;
     logic cpu_rst; // Holds CPU in rst until RUN state
+    
+    // Display
+    logic [15:0] display_value;
     
     PC PC_inst(
         .clk(clk),
@@ -242,10 +249,24 @@ module TOP(
         .load_error(load_error)
     );
     
+    Display DISPLAY_inst(
+        .clk(clk),
+        .rst(rst),
+        .value(display_value),
+        .seg(seg),
+        .dig(dig),
+        .dp(dp)
+    );
+    
     // As of right now, we are not transmitting back to the computer
     // Disabling TX for the moment
     assign tx_data = 8'h00;
     assign tx_valid = 1'b0;
+    
+    // LED assigning 
+    assign led[0] = load_error; // LED 0 lights up when error occurs
+    assign led[1] = load_done; // LED 1 lights up when instructions loaded
+    assign led[2] = !cpu_rst; // LED 2 lights up when cpu is running; not reset
     
     
     always_ff @(posedge clk) begin
@@ -269,5 +290,13 @@ module TOP(
         end
     end
     
+    // Display value
+    always_ff @(posedge clk) begin
+        if (rst) begin
+            display_value <= 0;
+        end else if (reg_write && rd != 0 && !cpu_rst) begin
+            display_value <= write_data[15:0];
+        end
+    end    
     
 endmodule
