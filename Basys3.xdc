@@ -1,31 +1,47 @@
-#100 MHz clock
-set_property -dict {PACKAGE_PIN W5 IOSTANDARD LVCMOS33} [get_ports clk]
-create_clock -period 10.000 -name sys_clk_pin -waveform {0.000 5.000} -add [get_ports clk]
+## Clock - 100 MHz
+set_property PACKAGE_PIN W5 [get_ports clk]
+set_property IOSTANDARD LVCMOS33 [get_ports clk]
+create_clock -period 10.000 [get_ports clk]
 
-#rst button (center)
-set_property -dict {PACKAGE_PIN U18 IOSTANDARD LVCMOS33} [get_ports rst]
+## Reset - Center Button
+set_property PACKAGE_PIN U18 [get_ports rst]
+set_property IOSTANDARD LVCMOS33 [get_ports rst]
 
-#LEDs
-set_property -dict {PACKAGE_PIN U16 IOSTANDARD LVCMOS33} [get_ports {led[0]}]
-set_property -dict {PACKAGE_PIN E19 IOSTANDARD LVCMOS33} [get_ports {led[1]}]
-set_property -dict {PACKAGE_PIN U19 IOSTANDARD LVCMOS33} [get_ports {led[2]}]
-set_property -dict {PACKAGE_PIN V19 IOSTANDARD LVCMOS33} [get_ports {led[3]}]
-set_property -dict {PACKAGE_PIN W18 IOSTANDARD LVCMOS33} [get_ports {led[4]}]
-set_property -dict {PACKAGE_PIN U15 IOSTANDARD LVCMOS33} [get_ports {led[5]}]
-set_property -dict {PACKAGE_PIN U14 IOSTANDARD LVCMOS33} [get_ports {led[6]}]
-set_property -dict {PACKAGE_PIN V14 IOSTANDARD LVCMOS33} [get_ports {led[7]}]
-set_property -dict {PACKAGE_PIN V13 IOSTANDARD LVCMOS33} [get_ports {led[8]}]
-set_property -dict {PACKAGE_PIN V3 IOSTANDARD LVCMOS33} [get_ports {led[9]}]
-set_property -dict {PACKAGE_PIN W3 IOSTANDARD LVCMOS33} [get_ports {led[10]}]
-set_property -dict {PACKAGE_PIN U3 IOSTANDARD LVCMOS33} [get_ports {led[11]}]
-set_property -dict {PACKAGE_PIN P3 IOSTANDARD LVCMOS33} [get_ports {led[12]}]
-set_property -dict {PACKAGE_PIN N3 IOSTANDARD LVCMOS33} [get_ports {led[13]}]
-set_property -dict {PACKAGE_PIN P1 IOSTANDARD LVCMOS33} [get_ports {led[14]}]
-set_property -dict {PACKAGE_PIN L1 IOSTANDARD LVCMOS33} [get_ports {led[15]}]
+## UART RX
+set_property PACKAGE_PIN B18 [get_ports rx]
+set_property IOSTANDARD LVCMOS33 [get_ports rx]
 
-#Switch
-set_property -dict {PACKAGE_PIN V17 IOSTANDARD LVCMOS33} [get_ports sw]
+## UART TX
+set_property PACKAGE_PIN A18 [get_ports tx]
+set_property IOSTANDARD LVCMOS33 [get_ports tx]
 
-#UART RX TX
-set_property -dict {PACKAGE_PIN B18 IOSTANDARD LVCMOS33} [get_ports rx]
-set_property -dict {PACKAGE_PIN A18 IOSTANDARD LVCMOS33} [get_ports tx]
+## LED
+set_property PACKAGE_PIN U16 [get_ports {led[0]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {led[0]}]
+set_property PACKAGE_PIN E19 [get_ports {led[1]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {led[1]}]
+set_property PACKAGE_PIN U19 [get_ports {led[2]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {led[2]}]
+
+## Seven segments
+set_property PACKAGE_PIN W7 [get_ports {seg[0]}]
+set_property PACKAGE_PIN W6 [get_ports {seg[1]}]
+set_property PACKAGE_PIN U8 [get_ports {seg[2]}]
+set_property PACKAGE_PIN V8 [get_ports {seg[3]}]
+set_property PACKAGE_PIN U5 [get_ports {seg[4]}]
+set_property PACKAGE_PIN V5 [get_ports {seg[5]}]
+set_property PACKAGE_PIN U7 [get_ports {seg[6]}]
+
+## Decimal point (always off)
+set_property PACKAGE_PIN V7 [get_ports dp]
+
+## Digits
+set_property PACKAGE_PIN U2 [get_ports {dig[0]}]
+set_property PACKAGE_PIN U4 [get_ports {dig[1]}]
+set_property PACKAGE_PIN V4 [get_ports {dig[2]}]
+set_property PACKAGE_PIN W4 [get_ports {dig[3]}]
+
+## I/O signal standards (Low voltage CMOS 3.3V)
+set_property IOSTANDARD LVCMOS33 [get_ports {seg[*]}]
+set_property IOSTANDARD LVCMOS33 [get_ports {dig[*]}]
+set_property IOSTANDARD LVCMOS33 [get_ports dp]
